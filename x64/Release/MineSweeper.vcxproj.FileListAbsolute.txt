@@ -1,0 +1,1 @@
+D:\Cpp\VS2022\MineSweeper\x64\Release\MineSweeper.exe
