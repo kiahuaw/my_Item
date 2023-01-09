@@ -1,4 +1,5 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
 #include <stdio.h>
 #include <time.h>
 #include <graphics.h>
@@ -6,30 +7,38 @@
 #include <stdlib.h>
 #include "data.h"
 #include "show.h"
+using namespace std;
 /*
-void data() {
-	for (int i = 0; i < 16; i++) {
-		for (int j = 0; j < 16; j++) {
-			printf("%d ", Map[i][j]);
+void data() {//用来看数据的，表层flagmap，内层map，map存着雷的数据，flagmap存着每个格子周围雷的数据以及是否被覆盖
+	for (int i = 0; i < hang; i++) {
+		for (int j = 0; j < lie; j++) {
+			cout << Map[i][j] <<endl;
 		}
-		printf("\n");
+		cout << "\n" << endl;
 	}
 	printf("\n");
+	for (int i = 0; i < hang; i++) {
+		for (int j = 0; j < lie; j++) {
+			cout << FlagMap[i][j] <<endl;
+		}
+		cout << "\n" << endl;
+	}
+	cout << "\n" << endl;
 }
 */
 int main(void) {
-	InitShowUI();
-	GamePlay();
+	InitShowUI();//先创建窗口
+	GamePlay();//游戏的核心函数
 	closegraph();
 	return 0;
 }
 void GamePlay() {
-	InitGame();
-	cleardevice();
-	start = time(NULL);
+	InitGame();//先初始化
+	cleardevice();//清楚背景
+	start = time(NULL);//计算循环开始的时间
 	while (1) {
-		data();
-		end = time(NULL);
+		//data();//数据的查看
+		end = time(NULL);//先获取时间防止输出乱码
 		ShowUI();
 		Control();
 		GameWinJudge();
@@ -64,7 +73,8 @@ void InitGame() {
 			Map[i][j] = 0;	
 	for (int i = 0; i < hang; i++) 
 		for (int j = 0; j < lie; j++) 
-			FlagMap[i][j] = 0;			
+			FlagMap[i][j] = 0;
+	
 	if (choice == 0)initMineNum = 10;
 	if (choice == 1)initMineNum = 40;
 	for (int i = 0; i < initMineNum; i++) {
@@ -128,7 +138,7 @@ void Control() {
 					}
 				}				
 			}
-			if (key.uMsg == WM_RBUTTONDOWN) {//右键
+			if (key.uMsg == WM_RBUTTONDOWN) {//右键点旗帜标记（画不出旗帜出来）
 				if (key.x >= pos[0][0].x && key.x <= pos[hang - 1][lie - 1].x + 30 
 				 && key.y >= pos[0][0].y && key.y <= pos[hang - 1][lie - 1].y + 30
 				 && boom == false) {
@@ -148,7 +158,7 @@ void FlagAndQmark(int x, int y) {
 				if (FlagMap[i][j] == 0 && FlagNumber()) {
 					FlagMap[i][j] += 10;
 					MineNum--;
-				}
+				}//10为标记，11为问好
 				else if (FlagMap[i][j] == 10 || FlagMap[i][j] == 11) {
 					FlagMap[i][j]++;
 					if (FlagMap[i][j] == 11)MineNum++;
@@ -159,9 +169,10 @@ void FlagAndQmark(int x, int y) {
 	}
 	return;
 }
-int MineNumber(int y, int x) {//简单的防止数组越界的操作返回雷的个数
+int MineNumber(int y, int x) {//简单粗暴地防止数组越界的操作返回雷的个数
 	if (y == 0 && x == 0)return Map[y][x + 1] + Map[y + 1][x] + Map[y + 1][x + 1];
 	if (y == 0) return Map[y][x + 1] + Map[y][x - 1] + Map[y + 1][x - 1] + Map[y + 1][x] + Map[y + 1][x + 1];
+	//————
 	else if (x == 0)return Map[y + 1][x] + Map[y - 1][x] + Map[y - 1][x + 1] + Map[y + 1][x + 1] + Map[y][x + 1];
 	else return Map[y][x + 1] + Map[y][x - 1] + Map[y + 1][x] + Map[y - 1][x]
 		+ Map[y + 1][x + 1] + Map[y + 1][x - 1] + Map[y - 1][x + 1] + Map[y - 1][x - 1];
@@ -184,7 +195,7 @@ void Expand(int y, int x) {
 }
 void Remove(int x, int y) {
 	for (int i = 0; i < hang; i++) {
-		for (int j = 0; j < lie; j++) {//判断点击的在第几行第几列   i行   j列 
+		for (int j = 0; j < lie; j++) {//判断点击的在第几行第几列   第i行   第j列 
 			if (x >= pos[i][j].x && x <= pos[i][j].x + 30 && y >= pos[i][j].y && y <= pos[i][j].y + 30) {
 				if (Map[i][j] == 1) {
 					boom = true;
@@ -197,33 +208,25 @@ void Remove(int x, int y) {
 	}
 	return;
 }
-int MineWatch() {
-	int count = 0;//返回周围8格子内qizi的个数
-	for (int i = 0; i < hang; i++) {
-		for (int j = 0; j < lie; j++) {
-			if (FlagMap[i][j] == 10) count++;
-		}
-	}
-	return count;
-}
 int GameWinJudge() {//胜利判断
 	int all = 0;
 	int Boom = 0;
 	for (int i = 0; i < hang; i++) {
 		for (int j = 0; j < lie; j++) {
-			if (Map[i][j] == 1 && FlagMap[i][j] == 10) Boom++;
+			if (Map[i][j] == 1 && FlagMap[i][j] == 10) Boom++;//Boom是判断旗子是否对应上，相当于降低了游戏难度，不会出现到最后二选一的现象
 			for (int k = 1; k <= 9; k++) {
+				//如果被点开了就++，判断格子总数减去点开的个数的数与雷数字做比较，相等则胜利
 				if (FlagMap[i][j] == k)all++;
 			}
 		}
 	}
 	if (choice == 0) //点完旗子或者除雷之外的格子都被点开就获胜
 		if (Boom == 10 || all == (width * height - initMineNum)) win = true;
-	if (choice == 1)
+	if (choice == 1)//因为只做中等和简单难度所以不做其他处理了
 		if (Boom == 40 || all == (width * height - initMineNum)) win = true;
 	return 0;
 }
-int FlagNumber() {//监视全局旗子的个数防止竖旗超过10个
+int FlagNumber() {//监视全局旗子的个数防止竖旗超过雷的个数并返回值
 	int count = 0;
 	for (int i = 0; i < hang; i++)
 		for (int j = 0; j < lie; j++)
