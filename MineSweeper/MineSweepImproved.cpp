@@ -39,7 +39,7 @@ void GamePlay() {
 	while (1) {
 		//data();//数据的查看
 		end = time(NULL);//先获取时间防止输出乱码
-		ShowUI();
+		ShowUI();//绘图的函数在头文件里写
 		Control();
 		GameWinJudge();
 		if (boom) {
@@ -49,16 +49,16 @@ void GamePlay() {
 		if (win)break;//如果赢了也退出循环
 	}
 	while (1) {
-		ShowUI();
-		Control();
+		ShowUI();//游戏结束先显示炸裂的动画
+		Control();//再进行鼠标捕捉
 	}
 	return;
 }
 void InitGame() {
-	Choose();
+	Choose();//先看选择的啥再初始化
 	boom = false;
 	win = false;
-	//记录每个格子左上角的坐标
+	//记录每个格子左上角的坐标,用来判断点击的位置
 	for (int i = 0; i < hang; i++) {
 		for (int j = 0; j < lie; j++) {
 			pos[i][j].x = (j) * 30 + j * 4 + 7;
@@ -70,11 +70,11 @@ void InitGame() {
 	//初始化地图元素
 	for (int i = 0; i < hang; i++) 
 		for (int j = 0; j < lie; j++) 
-			Map[i][j] = 0;	
+			Map[i][j] = 0;
 	for (int i = 0; i < hang; i++) 
 		for (int j = 0; j < lie; j++) 
 			FlagMap[i][j] = 0;
-	
+	//初始化雷的数量
 	if (choice == 0)initMineNum = 10;
 	if (choice == 1)initMineNum = 40;
 	for (int i = 0; i < initMineNum; i++) {
@@ -95,7 +95,7 @@ void InitGame() {
 	MineNum = initMineNum;
 	return;
 }
-void Choose() {
+void Choose() {//0对应的简单难度，1对应的普通难度，困难基本没有人玩就懒得写了
 	if (choice == 0) { hang = 9; lie = 9; }
 	if (choice == 1) { hang = 16; lie = 16; }
 	return;
@@ -151,14 +151,14 @@ void Control() {
 	}
 	return;
 }
-void FlagAndQmark(int x, int y) {
+void FlagAndQmark(int x, int y) {//右键标记雷和旗子的数据输入
 	for (int i = 0; i < hang; i++) {
 		for (int j = 0; j < lie; j++) {//判断点击的在第几行第几列   i行   j列 
 			if (x >= pos[i][j].x && x <= pos[i][j].x + 30 && y >= pos[i][j].y && y <= pos[i][j].y + 30) {
 				if (FlagMap[i][j] == 0 && FlagNumber()) {
 					FlagMap[i][j] += 10;
 					MineNum--;
-				}//10为标记，11为问好
+				}//10为标记，11为问号
 				else if (FlagMap[i][j] == 10 || FlagMap[i][j] == 11) {
 					FlagMap[i][j]++;
 					if (FlagMap[i][j] == 11)MineNum++;
@@ -170,19 +170,19 @@ void FlagAndQmark(int x, int y) {
 	return;
 }
 int MineNumber(int y, int x) {//简单粗暴地防止数组越界的操作返回雷的个数
-	if (y == 0 && x == 0)return Map[y][x + 1] + Map[y + 1][x] + Map[y + 1][x + 1];
+	if (y == 0 && x == 0) return Map[y][x + 1] + Map[y + 1][x] + Map[y + 1][x + 1];
 	if (y == 0) return Map[y][x + 1] + Map[y][x - 1] + Map[y + 1][x - 1] + Map[y + 1][x] + Map[y + 1][x + 1];
 	//————
 	else if (x == 0)return Map[y + 1][x] + Map[y - 1][x] + Map[y - 1][x + 1] + Map[y + 1][x + 1] + Map[y][x + 1];
 	else return Map[y][x + 1] + Map[y][x - 1] + Map[y + 1][x] + Map[y - 1][x]
 		+ Map[y + 1][x + 1] + Map[y + 1][x - 1] + Map[y - 1][x + 1] + Map[y - 1][x - 1];
 }
-void Expand(int y, int x) {
+void Expand(int y, int x) {//展开函数,深度递归
 	FlagMap[y][x] = 9;//9是打开的状态	
 	int minecount = MineNumber(y, x);
 	if (minecount == 0) {
 		for (int i = y - 1; i <= y + 1; i++) {
-			for (int j = x - 1; j <= x + 1; j++) {//在游戏区域内且附近的块可以打开
+			for (int j = x - 1; j <= x + 1; j++) {//在游戏区域内且附近8个格子的的块可以打开
 				if (i >= 0 && i < hang && j >= 0 && j < lie && FlagMap[i][j] == 0) {
 					FlagMap[i][j] = 9;//打开
 					Expand(i, j);//对可以打开的块的位置继续往下展开
@@ -193,12 +193,12 @@ void Expand(int y, int x) {
 	else //展开到有雷的地方就输入周围8个格子内有几个雷
 		FlagMap[y][x] = minecount;
 }
-void Remove(int x, int y) {
+void Remove(int x, int y) {//传递的点击的基本坐标，与初始化时所记录的左上角的坐标比对后可以确认点击的格子的坐标
 	for (int i = 0; i < hang; i++) {
 		for (int j = 0; j < lie; j++) {//判断点击的在第几行第几列   第i行   第j列 
 			if (x >= pos[i][j].x && x <= pos[i][j].x + 30 && y >= pos[i][j].y && y <= pos[i][j].y + 30) {
 				if (Map[i][j] == 1) {
-					boom = true;
+					boom = true;//直接炸
 					return;//点到雷直接结束游戏
 				}
 				if (FlagMap[i][j] != 0) return;//点击空白处不能打开方块
