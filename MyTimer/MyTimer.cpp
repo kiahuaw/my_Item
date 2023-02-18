@@ -1,17 +1,6 @@
 ﻿#include "data.h"
-void A() {
-	system("cls");
-	for (int i = 0; i < 12; i++) {
-		printf("%.2f\n", Sheet[i]);
-	}
-	printf("Fastest=%.2f\nSlowest=%.2f\n", Fastest, Slowest);
-	printf("ao5=%.2f\nao12=%.2f\n\n", sum_ao5, sum_ao12);
-}
-
 int main(void) {
-	srand((size_t)time(NULL));
-	
-	
+	srand((size_t)time(NULL));	
 	InitShowUI();
 	MainProcess();
 	getchar();
@@ -25,9 +14,7 @@ void MainProcess() {
 		Control();
 		DataCalculate();
 		if (StartTime)TimeProcess();
-
-	}
-	
+	}	
 	return;
 }
 void TimeProcess() {
@@ -39,8 +26,7 @@ void TimeProcess() {
 		ShowUI();
 		Control();
 	}
-	TimeSave(TimeShow);
-	
+	TimeSave(TimeShow);	
 	DataCalculate();
 	A();
 	MainProcess();
@@ -97,7 +83,6 @@ void Control() {
 		DataCalculate();
 		FormulaCreate();
 		ShowUI();
-		A();
 	}
 }
 void TimeSave(float inputnum) {
@@ -147,9 +132,7 @@ void DataCalculate() {
 			sum_ao12 += Sheet[i];
 		}
 		sum_ao12 = (sum_ao12 - Slowest - Fastest) / 10;
-	}
-	
-	
+	}	
 }
 void ShowUI() {
 	BeginBatchDraw();//开始批量绘图  并防止绘图闪烁
@@ -205,7 +188,6 @@ void ShowUI() {
 	outtextxy(130, 633, StringSlow);
 	outtextxy(35, 583, "Fast");
 	outtextxy(35, 633, "Slow");
-
 	//ao5和ao12的显示//要素过多也懒得写注释260, 570, 460, 670
 	line(260, 620, 460, 620);
 	line(260, 621, 460, 621);
@@ -218,11 +200,9 @@ void ShowUI() {
 	outtextxy(360, 633, String_ao12);
 	outtextxy(270, 583, "ao5");
 	outtextxy(262, 633, "ao12");
-
 	//写一些提示
 	outtextxy(510, 583, "BackSp_Del");
 	outtextxy(519, 633, "Enter_Next");
-
 	//打乱公式的显示
 	char Total1[80] = "";
 	char Total2[50] = ""; 
@@ -238,9 +218,6 @@ void ShowUI() {
 	}
 	outtextxy(100, 50, Total1);
 	outtextxy(170, 85, Total2);
-
-	
-
 	EndBatchDraw();//结束批量绘图
 	return;
 }
