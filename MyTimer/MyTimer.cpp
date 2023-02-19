@@ -1,4 +1,4 @@
-﻿#include "data.h"
+#include "data.h"
 int main(void) {
 	srand((size_t)time(NULL));	
 	InitShowUI();
@@ -14,7 +14,7 @@ void MainProcess() {
 		Control();
 		DataCalculate();
 		if (StartTime)TimeProcess();
-	}	
+	}
 	return;
 }
 void TimeProcess() {
@@ -26,8 +26,10 @@ void TimeProcess() {
 		ShowUI();
 		Control();
 	}
-	TimeSave(TimeShow);	
+	TimeSave(TimeShow);
+	
 	DataCalculate();
+	A();
 	MainProcess();
 	return;
 }
@@ -41,22 +43,33 @@ void InitData() {
 	return;
 }
 void FormulaCreate() {
-	int temp = rand() % 6;
 	int last1 = 0, last2 = 0;
-	for (int i = 0; i < 24; i++) {
-		while (1) {
-			if (temp == last1 || temp == last2)temp = rand() % 6;
-			else break;
+	for (int i = 0; i < 24; i++) {//奇数RUF偶数LDB
+		if (i % 2 == 0) { // == 0   则用RUF组写入    
+			int temp = rand() % 3;
+			while (1) {
+				if (temp == last1 || temp == last2)temp = rand() % 3;
+				else break;
+			}
+			last1 = temp;
+			last2 = last1;
+			if (temp == 0) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.R[rand() % 3][j];
+			if (temp == 1) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.U[rand() % 3][j];
+			if (temp == 2) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.F[rand() % 3][j];
 		}
-		last1 = temp;
-		last2 = last1;
-		if (temp == 0) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.R[rand() % 3][j];
-		if (temp == 1) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.L[rand() % 3][j];
-		if (temp == 2) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.U[rand() % 3][j];
-		if (temp == 3) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.D[rand() % 3][j];
-		if (temp == 4) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.F[rand() % 3][j];
-		if (temp == 5) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.B[rand() % 3][j];	
-	}
+		else if (i % 2 != 0) { //  == 1   用LDB组写入
+			int temp = rand() % 3;
+			while (1) {
+				if (temp == last1 || temp == last2)temp = rand() % 3;
+				else break;
+			}
+			last1 = temp;
+			last2 = last1;
+			if (temp == 0) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.L[rand() % 3][j];
+			if (temp == 1) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.D[rand() % 3][j];
+			if (temp == 2) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.B[rand() % 3][j];
+		}
+	}	
 	return;
 }
 void InitShowUI() {
