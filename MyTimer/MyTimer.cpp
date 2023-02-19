@@ -28,7 +28,6 @@ void TimeProcess() {
 	}
 	TimeSave(TimeShow);	
 	DataCalculate();
-	A();
 	MainProcess();
 	return;
 }
