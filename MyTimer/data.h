@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <conio.h>
 #include <time.h>
+#include <string.h>
+#include <Windows.h>
 #include <graphics.h>
 #include <easyx.h>
 
@@ -28,6 +30,20 @@ void Delete();
 
 void DataCalculate();
 
+void DataInit();
+
+int SaveNumbers();
+
+void SetTextRed() {
+	settextcolor(RGB(255, 0, 0));
+	ShowUI();
+}
+
+void SetTextGreen() {
+	settextcolor(RGB(0, 225, 0));
+	ShowUI();
+}
+
 bool StartTime = false;
 
 bool StopTime = false;
@@ -36,19 +52,33 @@ bool ao5count = false;
 
 bool ao12count = false;
 
+bool Press = 0;
+
+bool deleteif = 0;
+
 float TimeShow = 0.00;
 
 float sum_ao5 = 0;
 
 float sum_ao12 = 0;
 
-float Fastest = 100;//³õÊ¼»¯Îª100ÒÔ±ãÅĞ¶Ï
+float Fastest = 100;//åˆå§‹åŒ–ä¸º100ä»¥ä¾¿åˆ¤æ–­
 
 float Slowest = 0;
 
-float Sheet[12] = { 0 };//Ğ´µÄÊÇÈ¥Î²Æ½¾ù   Çóµô×î¸ßºÍ×îµÍ  ±£ÁôµÄÊÇÁ½Î»Ğ¡Êı
+float TheFast = 100;//å…¨éƒ¨çš„æœ€å¿«
+
+float TheSlow = 0;//å…¨éƒ¨çš„æœ€æ…¢
+
+float Sheet[12] = { 0 };
+
+float ALLavg = 0;
 
 char Formula[24][5] = { 0 };
+
+float* TotalSave = (float*)malloc(sizeof(float) * 2048);
+
+
 
 struct Perm {
 	char R[3][5] = { "R", "R'", "R2" };
@@ -61,6 +91,10 @@ struct Perm {
 
 
 
-clock_t start;//ÓÃÀ´¼ÆÊ±µÄ
+clock_t start;//ç”¨æ¥è®¡æ—¶çš„
 
 clock_t end;
+
+clock_t spacedown;
+
+clock_t spaceup;
