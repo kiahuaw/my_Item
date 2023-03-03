@@ -1,40 +1,42 @@
 #include "data.h"
-int main(void) {
+int main(void) {	
 	srand((size_t)time(NULL));
-	InitShowUI();//初始化图形界面
-	MainProcess();//程序的主函数
+	InitShowUI();
+	MainProcess(); 
 	return 0;
 }
 void MainProcess() {
-	InitData();//初始化数据
-	FormulaCreate();//创建打乱公式
+	DataInit();
+	InitData();
+	FormulaCreate();
+	ShowUI();
 	while (1) {
-		ShowUI();//显示ui
-		Control();//键盘监控函数
-		DataCalculate();//结果计算
-		if (StartTime)TimeProcess();//如果开始则开始计时
+		ShowUI();
+		Control();
+		DataCalculate();
+		if (StartTime)TimeProcess();
 	}
 	return;
 }
-void TimeProcess() {//计时的主题函数
-	start = clock();//记录开始时刻
+void TimeProcess() {
+	start = clock();
 	while (1) {
-		end = clock();//结束时刻
-		if (StopTime)break;//如果结束则退出循环
-		TimeRecord();//时间记录
-		ShowUI();//显示
-		Control();//控制
+		if (StopTime)break;
+		end = clock();
+		TimeRecord();
+		ShowUI();
+		Control();
 	}
-	TimeSave(TimeShow);//如果循环退出则将timeshow保存
-	DataCalculate();//计算ao5和ao12
-	MainProcess();//返回主程序
+	TimeSave(TimeShow);
+	DataCalculate();
+	MainProcess();
 	return;
 }
 void TimeRecord() {//时间显示实时生成保留的函数:对全局变量的操作 
 	TimeShow = (float)(end - start) / CLOCKS_PER_SEC;
 	return;
 }
-void InitData() {//初始化数据
+void InitData() {
 	StartTime = false;
 	StopTime = false;
 	Press = true;
@@ -49,7 +51,7 @@ void FormulaCreate() {
 				if (temp == last1 || temp == last2)temp = rand() % 3;
 				else break;
 			}
-			last1 = temp;//为了防止重复出现的情况，把前两次的数据记录防止接下来的生成重复
+			last1 = temp;
 			last2 = last1;
 			if (temp == 0) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.R[rand() % 3][j];
 			if (temp == 1) for (int j = 0; j < 5; j++)Formula[i][j] = Perm.U[rand() % 3][j];
@@ -70,7 +72,7 @@ void FormulaCreate() {
 	}
 	return;
 }
-void InitShowUI() {//初始化图形界面
+void InitShowUI() {
 	initgraph(1000, 700);
 	setbkcolor(RGB(0, 34, 51));
 	cleardevice();
@@ -84,8 +86,8 @@ void Control() {
 	//<0为按下  >0为未按下
 	if (GetKeyState(32) < 0 && StartTime == 0) {//按下了之后
 		spacedown = clock();
-		if (GetKeyState(32) < 0) {//如果还在按着就继续，否则退出循环
-			while ((spaceup - spacedown) < 550 && GetKeyState(32) < 0) {
+		if (GetKeyState(32) < 0 ) {//如果还在按着就继续，否则退出循环
+			while ((spaceup - spacedown) < 550 && GetKeyState(32) < 0 ) {
 				spaceup = clock();//计算时间的
 				if ((spaceup - spacedown) > 0 && (spaceup - spacedown) < 550)SetTextRed();//设置字体为红色
 			}
@@ -106,35 +108,74 @@ void Control() {
 	if (GetKeyState(32) < 0 && StartTime == 1) {
 		StopTime = 1;
 	}
-	if (key == 13) {//回车
-		FormulaCreate();
+	if (GetKeyState(13) < 0) {//回车
+		spacedown = clock();
+		while (1) {
+			spaceup = clock();
+			if ((spaceup - spacedown) > 200) {
+				FormulaCreate();
+				break;
+			}
+		}
 	}
-	else if (key == '\b') {
-		Delete();//删除成绩
-		DataCalculate();
+	else if (GetKeyState(8) < 0) {
+		spacedown = clock();
+		while (1) {
+			spaceup = clock();
+			if ((spaceup - spacedown) > 300) {
+				deleteif = 1;
+				TimeSave(0);
+				DataCalculate();
+				break;
+			}
+		}
 	}
 }
-void TimeSave(float inputnum) {
-	for (int i = 11; i > 0; i--) 
-		Sheet[i] = Sheet[i - 1];//把每个成绩往下移一个
-	Sheet[0] = inputnum;//输入成绩
-	/*文件读写功能，等以后有时间再写
+int SaveNumbers() {
+	int SaveNum = 0;
+	for (int i = 0; i < 2048; i++) {
+		if (TotalSave[i] == 0) {
+			SaveNum = i;//记录成绩个数
+			break;
+		}
+	}
+	return SaveNum;
+}
+void DataInit() {
 	FILE* fp1 = fopen("D:/Cpp/Timer_Saves/Saves.txt", "r");
+	if (!fp1) { printf("读取失败"); return; }
+	memset(TotalSave, 0, sizeof(float) * 2048);//清空内存空间
+	for (int i = 0; i < 2048; i++) 
+		fscanf(fp1, "%f", &TotalSave[i]);//从文件中读取数据到内存中
+	for (int i = 0; i < 12; i++) 
+		Sheet[i] = TotalSave[SaveNumbers() - i - 1];//列表的等于所有的最后12个成绩
+	fclose(fp1);
+	return;
+}
+void TimeSave(float inputnum) {
 	FILE* fp2 = fopen("D:/Cpp/Timer_Saves/Saves.txt", "w");
-	if (!fp1 || !fp2) {
-		printf("寄");
-		return;
-	}*/
+	if (!fp2) { printf("写入失败"); return; }
+	if (deleteif) { Delete(); deleteif = 0; }//如果删除成绩就不输入成绩
+	else TotalSave[SaveNumbers()] = inputnum;//(否则就输入成绩)取下一个位置为最后一个成绩并输入
+	for (int i = 0; i < 2048; i++) {
+		if (TotalSave[i] == 0)break;//等于0就不输出到文件夹里面s
+		fprintf(fp2, "%.2f\n", TotalSave[i]);
+	}
+	fclose(fp2);
 	return;
 }
 void Delete() {
-	for (int i = 0; i < 11; i++) //删除成绩
-		Sheet[i] = Sheet[i + 1];//把每个成绩往上移一格
-	Sheet[11] = 0.00;//最后一格的成绩==0
+	TotalSave[SaveNumbers() - 1] = 0;
+	for (int i = 0; i < 12; i++)
+		Sheet[i] = TotalSave[SaveNumbers() - i - 1];
 }
 void DataCalculate() {
 	Slowest = 0;//初始化最快最慢绩否则删除成绩时没有数据比原来的更慢
 	Fastest = 100;
+
+	TheFast = 100;//全部的最快
+	TheSlow = 0;//全部的最慢
+
 	sum_ao5 = 0;
 	sum_ao12 = 0;
 	for (int i = 0; i < 12; i++) {// 还是得有一部分拿来判断最快和最慢，虽然有点冗余
@@ -169,11 +210,17 @@ void DataCalculate() {
 		}
 		sum_ao12 = (sum_ao12 - Slowest - Fastest) / 10;
 	}
+	float sum = 0;
+	for (int i = 0; i < SaveNumbers(); i++) {
+		sum += TotalSave[i];
+		if (TotalSave[i] != 0 && TotalSave[i] > TheSlow)TheSlow = TotalSave[i];
+		if (TotalSave[i] != 0 && TotalSave[i] < TheFast)TheFast = TotalSave[i];
+	}
+	ALLavg = sum / SaveNumbers();
 }
-void ShowUI() {
+void ShowUI() {//下次写显示函数一定分块写，一个一个找参数哥们要疯了
 	BeginBatchDraw();//开始批量绘图  并防止绘图闪烁
 	cleardevice();
-	
 	//中间时间的显示s
 	if (Press) {
 		settextstyle(200, 0, "OCR A Extended");
@@ -204,8 +251,10 @@ void ShowUI() {
 		solidroundrect(780, 50, 950, 130, 70, 70);//mytimer  的logo
 		solidroundrect(30, 570, 230, 670, 30, 30);//显示当前最慢和最快
 		solidroundrect(260, 570, 460, 670, 30, 30);//ao5和ao12
-		solidroundrect(490, 570, 690, 618, 50, 50);//删除本次成绩
-		solidroundrect(490, 622, 690, 670, 50, 50);//下一条打乱的位置
+		solidroundrect(490, 570, 690, 670, 30, 30);//总平均
+		line(490, 620, 690, 620);
+		line(490, 621, 690, 621);
+		line(560, 570, 560, 670);
 		//logo
 		settextstyle(40, 0, "华文琥珀");
 		outtextxy(790, 72, "MyTimer");
@@ -216,9 +265,9 @@ void ShowUI() {
 		char Number[12][4] = { 0 };
 		for (int i = 0; i < 12; i++) {
 			sprintf(Saves[i], "%.2f", Sheet[i]);
-			sprintf(Number[i], "%d", i + 1);
+			sprintf(Number[i], "%d", SaveNumbers() - i);
 			outtextxy(860, 210 + 36 * i + 4, Saves[i]);
-			outtextxy(760, 210 + 36 * i + 4, Number[i]);
+			outtextxy(755, 210 + 36 * i + 4, Number[i]);
 		}
 		//最快和最慢的显示//要素过多懒得写注释30, 570, 230, 670
 		line(30, 620, 230, 620);
@@ -227,8 +276,8 @@ void ShowUI() {
 		char StringFast[10] = "";
 		char StringSlow[10] = "";
 		if (Sheet[0] == 0)sprintf(StringFast, "%.2f", 0.00);
-		else sprintf(StringFast, "%.2f", Fastest);
-		sprintf(StringSlow, "%.2f", Slowest);
+		else sprintf(StringFast, "%.2f", TheFast);
+		sprintf(StringSlow, "%.2f", TheSlow);
 		outtextxy(130, 583, StringFast);
 		outtextxy(130, 633, StringSlow);
 		outtextxy(35, 583, "Fast");
@@ -245,13 +294,17 @@ void ShowUI() {
 		outtextxy(360, 633, String_ao12);
 		outtextxy(270, 583, "ao5");
 		outtextxy(262, 633, "ao12");
-		//写一些提示
-		outtextxy(510, 583, "Del_BackSp");
-		outtextxy(519, 633, "Next_Enter");
+		char TotalAVG[10] = "";
+		sprintf(TotalAVG, "%.2f", ALLavg);
+		outtextxy(500, 583, "AVG");
+		outtextxy(580, 583, TotalAVG);
+		outtextxy(493, 633, "Solve");
+		char SolveTimes[10] = "";
+		sprintf(SolveTimes, "%d", SaveNumbers());
+		outtextxy(595, 633, SolveTimes);
 		//打乱公式的显示
 		char Total1[80] = "";
 		char Total2[50] = "";
-		//settextstyle(40, 0, "微软雅黑");
 		settextstyle(40, 0, "Microsoft YaHei UI");
 		for (int i = 0; i < 15; i++) {
 			strcat(Total1, Formula[i]);
@@ -264,6 +317,9 @@ void ShowUI() {
 		outtextxy(100, 50, Total1);
 		outtextxy(170, 85, Total2);
 	}
+
+
 	EndBatchDraw();//结束批量绘图
 	return;
 }
+
